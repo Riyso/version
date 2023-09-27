@@ -17,7 +17,7 @@ local bodyparts = {"Торс", "Пах", "Левая рука", "Правая рука", "Левая нога", "Пр
 update_state = false
 
 local script_vers = 5
-local script_vers_text = "3.6"
+local script_vers_text = "1.2"
 
 local update_url = "https://raw.githubusercontent.com/Riyso/version/main/update.ini" -- тут тоже свою ссылку
 local update_path = getWorkingDirectory() .. "/update.ini" -- и тут свою ссылку
@@ -83,7 +83,7 @@ function main()
 end
 
 function cmd_update(arg)
-    sampShowDialog(1000, "Автообновление v3.6", "{FFFFFF}Это урок по обновлению\n{FFF000}Новая версия", "Закрыть", "", 0)
+    sampShowDialog(1000, "Автообновление v1.2", "{FFFFFF}Это урок по обновлению\n{FFF000}Новая версия\nLox", "Закрыть", "", 0)
 end
 
 function sampev.onSendTakeDamage(playerid, damage, weapon, bodypart)
