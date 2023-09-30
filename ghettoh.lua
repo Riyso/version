@@ -1,5 +1,5 @@
-script_name("moonloader-script-updater-example")
-script_version("1.0")
+script_name("ghettoh")
+script_version("1.5")
 
 require "lib.moonloader" -- подключение библиотеки
 local dlstatus = require('moonloader').download_status
@@ -75,7 +75,7 @@ function main()
 end
 
 function cmd_update(arg)
-    sampShowDialog(1000, "Автообновление v0.00", "{FFFFFF}Это урок по обновлению\n{ffff00}Старая версия", "Закрыть", "", 0)
+    sampShowDialog(1000, "Автообновление v1.5", "{ff8c00}Новая версия", "Закрыть", "", 0)
 end
 
 function renderFigure2D(x, y, points, radius, color)
