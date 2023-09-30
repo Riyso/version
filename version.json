@@ -1,4 +1,4 @@
 {
-  "latest": "1.05",
-  "updateurl": "https://raw.githubusercontent.com/qrlk/moonloader-script-updater/master/minified-example.lua"
+  "updateurl": "http://www.qrlk.me/dev/moonloader/adblock/!adblock.lua",
+  "latest": "1.5"
 }
