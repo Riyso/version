@@ -13,6 +13,17 @@ local weapon = require 'game.weapons'
 encoding.default = 'CP1251'
 u8 = encoding.UTF8
 
+update_state = false
+
+local script_vers = 0
+local script_vers_text = "1.05"
+
+local update_url = "https://raw.githubusercontent.com/Riyso/version/main/update.ini" -- тут тоже свою ссылку
+local update_path = getWorkingDirectory() .. "/update.ini" -- и тут свою ссылку
+
+local script_url = "https://raw.githubusercontent.com/Riyso/version/main/ghettoh.lua?raw=true" -- тут свою ссылку
+local script_path = thisScript().path
+
 font = renderCreateFont("Tahoma", 10, FCR_BOLD + FCR_BORDER)
 local bodyparts = {"Торс", "Пах", "Левая рука", "Правая рука", "Левая нога", "Правая нога", "Голова"}
 
@@ -24,17 +35,36 @@ function main()
 
 	_, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
     nick = sampGetPlayerNickname(id)
-	autoupdate("https://raw.githubusercontent.com/Riyso/version/main/version.json", '['..string.upper(thisScript().name)..']: ', "https://vk.com/scripts_avanesovspb")
+	
+	downloadUrlToFile(update_url, update_path, function(id, status)
+        if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+            updateIni = inicfg.load(nil, update_path)
+            if tonumber(updateIni.info.vers) > script_vers then
+                sampAddChatMessage("Есть обновление! Версия: " .. updateIni.info.vers_text, -1)
+                update_state = true
+            end
+            os.remove(update_path)
+        end
+    end)
 
     while true do wait(0)
         if last_damage then
-            if isKeyDown(18) and not sampIsChatInputActive() and not sampIsDialogActive() then -- Alt + X
+            if isKeyJustPressed(18) and not sampIsChatInputActive() and not sampIsDialogActive() then -- Alt + X
                 --sampAddChatMessage(string.format("Последнее попадание: {CCCCCC}%s[%d] | %s | -%d HP | %s | %s", sampGetPlayerNickname(last_damage.playerid), last_damage.playerid, weapon.get_name(last_damage.weapon), math.round(last_damage.damage, 2), bodyparts[last_damage.bodypart - 2], os.date("%X")), 0xFF9000)
 				if bNotf then
 					notf.addNotification(string.format("Последнее попадание: {CCCCCC}%s[%d] | %s | -%d HP | %s | %s", sampGetPlayerNickname(last_damage.playerid), last_damage.playerid, weapon.get_name(last_damage.weapon), math.round(last_damage.damage, 2), bodyparts[last_damage.bodypart - 2], os.date("%X")), 4, 2)
 				end
 				last_damage = nil
             end
+        end
+		if update_state then
+            downloadUrlToFile(script_url, script_path, function(id, status)
+                if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+                    sampAddChatMessage("Скрипт успешно обновлен!", -1)
+                    thisScript():reload()
+                end
+            end)
+            break
         end
 		if isKeyDown(VK_MENU) and isKeyDown(VK_RBUTTON) and not sampIsChatInputActive() and not sampIsDialogActive()  then
             local X, Y = getScreenResolution()
@@ -133,69 +163,4 @@ end
 math.round = function(num, idp)
     local mult = 10^(idp or 0)
     return math.floor(num * mult + 0.5) / mult
-end
-
---
---     _   _   _ _____ ___  _   _ ____  ____    _  _____ _____   ______   __   ___  ____  _     _  __
---    / \ | | | |_   _/ _ \| | | |  _ \|  _ \  / \|_   _| ____| | __ ) \ / /  / _ \|  _ \| |   | |/ /
---   / _ \| | | | | || | | | | | | |_) | | | |/ _ \ | | |  _|   |  _ \\ V /  | | | | |_) | |   | ' /
---  / ___ \ |_| | | || |_| | |_| |  __/| |_| / ___ \| | | |___  | |_) || |   | |_| |  _ <| |___| . \
--- /_/   \_\___/  |_| \___/ \___/|_|   |____/_/   \_\_| |_____| |____/ |_|    \__\_\_| \_\_____|_|\_\                                                                                                                                                                                                                
---
--- Author: http://qrlk.me/samp
---
-function autoupdate(json_url, prefix, url)
-  local dlstatus = require('moonloader').download_status
-  local json = getWorkingDirectory() .. '\\'..thisScript().name..'-version.json'
-  if doesFileExist(json) then os.remove(json) end
-  downloadUrlToFile(json_url, json,
-    function(id, status, p1, p2)
-      if status == dlstatus.STATUSEX_ENDDOWNLOAD then
-        if doesFileExist(json) then
-          local f = io.open(json, 'r')
-          if f then
-            local info = decodeJson(f:read('*a'))
-            updatelink = info.updateurl
-            updateversion = info.latest
-            f:close()
-            os.remove(json)
-            if updateversion ~= thisScript().version then
-              lua_thread.create(function(prefix)
-                local dlstatus = require('moonloader').download_status
-                local color = -1
-                sampAddChatMessage((prefix..'Обнаружено обновление. Пытаюсь обновиться c '..thisScript().version..' на '..updateversion), color)
-                wait(250)
-                downloadUrlToFile(updatelink, thisScript().path,
-                  function(id3, status1, p13, p23)
-                    if status1 == dlstatus.STATUS_DOWNLOADINGDATA then
-                      print(string.format('Загружено %d из %d.', p13, p23))
-                    elseif status1 == dlstatus.STATUS_ENDDOWNLOADDATA then
-                      print('Загрузка обновления завершена.')
-                      sampAddChatMessage((prefix..'Обновление завершено!'), color)
-                      goupdatestatus = true
-                      lua_thread.create(function() wait(500) thisScript():reload() end)
-                    end
-                    if status1 == dlstatus.STATUSEX_ENDDOWNLOAD then
-                      if goupdatestatus == nil then
-                        sampAddChatMessage((prefix..'Обновление прошло неудачно. Запускаю устаревшую версию..'), color)
-                        update = false
-                      end
-                    end
-                  end
-                )
-                end, prefix
-              )
-            else
-              update = false
-              print('v'..thisScript().version..': Обновление не требуется.')
-            end
-          end
-        else
-          print('v'..thisScript().version..': Не могу проверить обновление. Смиритесь или проверьте самостоятельно на '..url)
-          update = false
-        end
-      end
-    end
-  )
-  while update ~= false do wait(100) end
 end
