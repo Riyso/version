@@ -15,7 +15,7 @@ u8 = encoding.UTF8
 
 update_state = false
 
-local script_vers = 0
+local script_vers = 1
 local script_vers_text = "1.5"
 
 local update_url = "https://raw.githubusercontent.com/Riyso/version/main/update.ini" -- тут тоже свою ссылку
